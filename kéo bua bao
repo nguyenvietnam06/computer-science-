@@ -1,0 +1,131 @@
+import tkinter as tk
+from tkinter import messagebox
+from PIL import Image, ImageTk
+import random
+
+class RockPaperScissorsGame:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("KÉO BÚA BAO")
+        self.root.geometry("500x600")
+        self.root.resizable(0,0)
+
+
+        self.player_score = 0
+        self.computer_score = 0
+        self.round_count = 0
+        self.max_rounds = 0
+        self.game_playing = False
+
+        self.title_label = tk.Label(root, text="KÉO BÚA BAO", font=("Arial", 28, "bold"), fg="red")
+        self.title_label.pack(pady=10)
+
+
+        frame_top = tk.Frame(root)
+        frame_top.pack()
+
+        tk.Label(frame_top, text="Nhập số vòng: ", font=("Arial", 14)).grid(row=0, column=0, padx=10, pady=5)
+        self.round_entry = tk.Entry(frame_top, width=5, font=("Arial", 14))
+        self.round_entry.grid(row=0, column=1, padx=5)
+
+        self.start_button = tk.Button(frame_top, text="Bắt đầu", font=("Arial", 14), command=self.start_game)
+        self.start_button.grid(row=1, column=0, columnspan=2, pady=5)
+
+        self.score_label = tk.Label(root, text="Máy: 0  Ván: 0  Bạn: 0", font=("Arial", 18))
+        self.score_label.pack(pady=10)
+
+        self.img_keo = ImageTk.PhotoImage(Image.open("keo (2).gif").resize((120,120)))
+        self.img_bua = ImageTk.PhotoImage(Image.open("bua.gif").resize((120,120)))
+        self.img_bao = ImageTk.PhotoImage(Image.open("bao.gif").resize((120,120)))
+        self.images = {"Kéo": self.img_keo, "Búa": self.img_bua, "Bao": self.img_bao}
+
+        frame_bottom = tk.Frame(root)
+        frame_bottom.pack(pady=20)
+
+        self.btn_keo = tk.Button(frame_bottom, image=self.img_keo, command=lambda: self.play("Kéo"))
+        self.btn_keo.grid(row=0, column=0, padx=20)
+
+        self.btn_bua = tk.Button(frame_bottom, image=self.img_bua, command=lambda: self.play("Búa"))
+        self.btn_bua.grid(row=0, column=1, padx=20)
+
+        self.btn_bao = tk.Button(frame_bottom, image=self.img_bao, command=lambda: self.play("Bao"))
+        self.btn_bao.grid(row=0, column=2, padx=20)
+
+        frame_result = tk.Frame(root)
+        frame_result.pack(pady=20)
+
+        tk.Label(frame_result, text="Bạn chọn", font=("Arial", 14)).grid(row=0, column=0, padx=50)
+        tk.Label(frame_result, text="Máy chọn", font=("Arial", 14)).grid(row=0, column=1, padx=50)
+
+        self.player_choice_label = tk.Label(frame_result, image=None)
+        self.player_choice_label.grid(row=1, column=0, padx=50)
+
+        self.computer_choice_label = tk.Label(frame_result, image=None)
+        self.computer_choice_label.grid(row=1, column=1, padx=50)
+
+        self.result_label = tk.Label(root, text="", font=("Arial", 16), fg="blue")
+        self.result_label.pack(pady=10)
+
+    def start_game(self):
+        try:
+            self.max_rounds = int(self.round_entry.get())
+            if self.max_rounds <= 0:
+                raise ValueError
+        except:
+            messagebox.showerror("ERROR","Vui lòng nhập số vòng hợp lệ!")
+            return
+
+        self.player_score = 0
+        self.computer_score = 0
+        self.round_count = 0
+        self.game_playing = True
+        self.result_label.config(text="")
+        self.player_choice_label.config(image="")
+        self.computer_choice_label.config(image="")
+        self.update_score()
+        
+
+
+    def play(self, player_choice):
+        if not self.game_playing:
+            messagebox.showinfo("Thông báo", "Hãy nhập số vòng và bấm Bắt đầu!")
+            return
+
+        options = ["Kéo", "Búa", "Bao"]
+        computer_choice = random.choice(options)
+
+        self.player_choice_label.config(image=self.images[player_choice])
+        self.computer_choice_label.config(image=self.images[computer_choice])
+
+        if player_choice == computer_choice:
+            result = "Hòa!"
+        elif (player_choice == "Kéo" and computer_choice == "Bao") or \
+             (player_choice == "Búa" and computer_choice == "Kéo") or \
+             (player_choice == "Bao" and computer_choice == "Búa"):
+            result = "Bạn thắng!"
+            self.player_score += 1
+        else:
+            result = "Máy thắng!"
+            self.computer_score += 1
+
+        self.round_count += 1
+        self.result_label.config(text=f"→ {result}")
+        self.update_score()
+
+        if self.round_count >= self.max_rounds:
+            self.game_playing = False
+            if self.player_score > self.computer_score:
+                winner = "Bạn thắng chung cuộc!"
+            elif self.player_score < self.computer_score:
+                winner = "Máy thắng chung cuộc!"
+            else:
+                winner = "Hòa chung cuộc!"
+            messagebox.showinfo("Kết thúc", winner)
+
+    def update_score(self):
+        self.score_label.config(text=f"Máy: {self.computer_score}  Ván: {self.round_count}  Bạn: {self.player_score}")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = RockPaperScissorsGame(root)
+    root.mainloop()
